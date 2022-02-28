@@ -10,9 +10,13 @@
 import { ExtensionContext, commands, window } from 'vscode';
 import { MemoryServer } from './memory/server/MemoryServer';
 export { MemoryServer } from './memory/server/MemoryServer';
+import { GlobalVariablesServer } from './globalvariables/server/GlobalVariablesServer';
+export { GlobalVariablesServer } from './globalvariables/server/GlobalVariablesServer';
 
 export function activate(context: ExtensionContext) {
     new MemoryServer(context);
+	
+	new GlobalVariablesServer(context);
 
     context.subscriptions.push(
        commands.registerCommand('cdt.debug.askProgramPath', config => {
