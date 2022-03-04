@@ -10,7 +10,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ClientRequest, ServerResponse, ReadGlobals } from '../common/messages';
-import { MemoryContents } from 'cdt-gdb-adapter';
 
 export class GlobalVariablesServer {
     private panel?: vscode.WebviewPanel;
@@ -58,7 +57,7 @@ export class GlobalVariablesServer {
     private onDidReceiveMessage(request: ClientRequest) {
         switch (request.command) {
             case 'ReadGlobals':
-                this.handleReadMemory(request);
+                this.handleReadGlobals(request);
                 break;
         }
     }
@@ -71,11 +70,24 @@ export class GlobalVariablesServer {
         }
     }
     
-    private async handleReadMemory(request: ReadGlobals.Request) {
+    private async handleReadGlobals(request: ReadGlobals.Request) {
         const session = vscode.debug.activeDebugSession;
         if (session) {
             try {
-                const result: MemoryContents = await session.customRequest('cdt-gdb-adapter/Memory', request.args);
+                // request.args = {"command" : "info variables"};
+                const result = await session.customRequest('cdt-gdb-adapter/processGlobalVarCommand', {command:'-symbol-info-variables'});
+                console.log (result);
+                ///////////////////////////////////
+                if(result.symbols && result.symbols.debug){
+                    for(let i=0; i<result.symbols.debug.length; i++){
+                        for(let j=0; j<result.symbols.debug[i].symbols.length; j++){
+                            const evalResult = await session.customRequest('cdt-gdb-adapter/evaluateGlobalVarCommand', {expression : "'" + result.symbols.debug[i].filename + "'" + "::" + result.symbols.debug[i].symbols[j].name});
+                            console.log(evalResult);
+                            result.symbols.debug[i].symbols[j].value = evalResult.value;
+                        }
+                    }
+                }
+                //////////////////////////////////
                 this.sendResponse(request, {
                     result
                 })

@@ -13,70 +13,66 @@
  *********************************************************************/
 
 import * as React from 'react';
-import { MemoryContents } from 'cdt-gdb-adapter';
 
 import './GlobalVariables.scss';
 import { messageBroker } from './MessageBroker';
 
-class ForwardIterator implements Iterator<number> {
-    private nextItem: number = 0;
+// class ForwardIterator implements Iterator<number> {
+//     private nextItem: number = 0;
 
-    constructor(private array: Uint8Array) { }
+//     constructor(private array: Uint8Array) { }
 
-    next(): IteratorResult<number> {
-        if (this.nextItem < this.array.length) {
-            return {
-                value: this.array[this.nextItem++],
-                done: false,
-            }
-        } else {
-            return {
-                done: true,
-                value: 0,
-            };
-        }
-    }
+//     next(): IteratorResult<number> {
+//         if (this.nextItem < this.array.length) {
+//             return {
+//                 value: this.array[this.nextItem++],
+//                 done: false,
+//             }
+//         } else {
+//             return {
+//                 done: true,
+//                 value: 0,
+//             };
+//         }
+//     }
 
-    [Symbol.iterator](): IterableIterator<number> {
-        return this;
-    }
-}
+//     [Symbol.iterator](): IterableIterator<number> {
+//         return this;
+//     }
+// }
 
-class ReverseIterator implements Iterator<number> {
-    private nextItem: number;
+// class ReverseIterator implements Iterator<number> {
+//     private nextItem: number;
 
-    constructor(private array: Uint8Array) {
-        this.nextItem = this.array.length - 1;
-    }
+//     constructor(private array: Uint8Array) {
+//         this.nextItem = this.array.length - 1;
+//     }
 
-    next(): IteratorResult<number> {
-        if (this.nextItem >= 0) {
-            return {
-                value: this.array[this.nextItem--],
-                done: false,
-            }
-        } else {
-            return {
-                done: true,
-                value: 0,
-            };
-        }
-    }
+//     next(): IteratorResult<number> {
+//         if (this.nextItem >= 0) {
+//             return {
+//                 value: this.array[this.nextItem--],
+//                 done: false,
+//             }
+//         } else {
+//             return {
+//                 done: true,
+//                 value: 0,
+//             };
+//         }
+//     }
 
-    [Symbol.iterator](): IterableIterator<number> {
-        return this;
-    }
-}
+//     [Symbol.iterator](): IterableIterator<number> {
+//         return this;
+//     }
+// }
 
 interface Props {
 };
 
 interface State {
-    memory?: MemoryContents;
+    symbols?: any;
     error?: JSX.Element;
-    bytesPerRow: number;
-    bytesPerGroup: number;
-    endianness: 'le' | 'be';
 };
 
 export class GlobalVariables extends React.Component<Props, State> {
@@ -86,9 +82,6 @@ export class GlobalVariables extends React.Component<Props, State> {
     constructor (props: Props) {
         super(props);
         this.state = {
-            bytesPerRow: 32,
-            bytesPerGroup: 8,
-            endianness: 'le'
         };
     }
 
@@ -96,7 +89,7 @@ export class GlobalVariables extends React.Component<Props, State> {
         try {
             this.setState({
                 error: undefined,
-                memory: undefined
+                symbols: undefined
             });
             const result = await messageBroker.send({
                 command: 'ReadGlobals',
@@ -105,7 +98,8 @@ export class GlobalVariables extends React.Component<Props, State> {
                     length: parseInt(this.lengthReq)
                 }
             });
-            this.setState({memory: result.result});
+            console.log(result.result.symbols);
+            this.setState({symbols: result.result});
         } catch (err) {
             this.setState({error: <h3>{err + ''}</h3>});
         }
@@ -114,7 +108,7 @@ export class GlobalVariables extends React.Component<Props, State> {
     onEndiannessChange(event: React.FormEvent<HTMLInputElement>) {
         const value = event.currentTarget.value;
         if (value === 'le' || value === "be") {
-            this.setState({endianness: value});
+            this.setState({});
         }
     }
 
@@ -125,73 +119,78 @@ export class GlobalVariables extends React.Component<Props, State> {
                         onClick={() => this.sendReadMemoryRequest()}
                         
                     >
-                        Fetch Globals
+                        Fetch/Update Globals
                     </button>
                 </div>
         );
     }
 
-    private hex2bytes(hex: string): Uint8Array {
-        const bytes = new Uint8Array(hex.length / 2);
+    // private hex2bytes(hex: string): Uint8Array {
+    //     const bytes = new Uint8Array(hex.length / 2);
 
-        for (let i = 0; i < hex.length / 2; i++) {
-            const hexByte = hex.slice(i * 2, (i + 1) * 2);
-            const byte = parseInt(hexByte, 16);
-            bytes[i] = byte;
-        }
+    //     for (let i = 0; i < hex.length / 2; i++) {
+    //         const hexByte = hex.slice(i * 2, (i + 1) * 2);
+    //         const byte = parseInt(hexByte, 16);
+    //         bytes[i] = byte;
+    //     }
 
-        return bytes;
-    }
+    //     return bytes;
+    // }
 
-    private isprint(byte: number) {
-        return byte >= 32 && byte < 127;
-    }
+    // private isprint(byte: number) {
+    //     return byte >= 32 && byte < 127;
+    // }
     
     private renderRows() {
-        if (!this.state.memory) {
+        if (!this.state.symbols) {
             return undefined;
         }
-
-        const bytes = this.hex2bytes(this.state.memory.data);
-        const address = parseInt(this.state.memory.address, 16);
-
         const rows: JSX.Element[] = [];
+        // this.state = {symbols : {"test" : "testworking"}};
+        // if(!this.state.symbols.symbols){
 
-        for (let rowOffset = 0; rowOffset < bytes.length; rowOffset += this.state.bytesPerRow) {
-            const rowBytes = bytes.subarray(rowOffset, rowOffset + this.state.bytesPerRow);
-
-            const addressStr = '0x' + (address + rowOffset).toString(16);
-            const data: string[] = [];
-            let asciiStr = '';
-
-            for (let groupOffset = 0; groupOffset < rowBytes.length; groupOffset += this.state.bytesPerGroup) {
-                const groupBytes = rowBytes.subarray(groupOffset, groupOffset + this.state.bytesPerGroup);
-                let groupStr = '';
-                const iteratorType = this.state.endianness == 'be' ? ForwardIterator : ReverseIterator;
-
-                for (const byte of new iteratorType(groupBytes)) {
-                    const byteStr = byte.toString(16);
-                    if (byteStr.length == 1) {
-                        groupStr += '0';
-                    }
-                    groupStr += byteStr;
-                }
-
-                data.push(groupStr);
-
-                for (const byte of groupBytes) {
-                    asciiStr += this.isprint(byte) ? String.fromCharCode(byte) : '.';
-                }
-            }
-
-            rows.push(
-                <tr key={rowOffset}>
-                    <td key={`addr${rowOffset}`}>{addressStr}</td>
-                    {data.map((group, index) => <td key={`data${rowOffset},${index}`}>{group}</td>)}
-                    <td key={`asc${rowOffset}`}>{asciiStr}</td>
-                </tr>
-            )
+        // }
+        if(!this.state.symbols.symbols || !this.state.symbols.symbols.debug){
+            return undefined;
         }
+        const debugSymbols = this.state.symbols.symbols.debug;
+        for (let i=0; i<debugSymbols.length; i++) {
+            for (let j=0; j<debugSymbols[i].symbols.length; j++) {
+                rows.push(
+                    <tr>
+                        <td>{debugSymbols[i].symbols[j].name}</td>
+                        <td>{debugSymbols[i].symbols[j].type}</td>
+                        <td>{debugSymbols[i].filename}</td>
+                        <td>{debugSymbols[i].symbols[j].value}</td>
+                    </tr>
+                );
+            }
+        }
+        // for (let i=0; i<this.state.symbols[0].debug[0].symbols.length; i++) {
+        //     let varName = this.state.symbols[0].debug[0].symbols[i].name;
+        //     rows.push(
+        //         <tr>
+        //             <td>{varName}</td>
+        //             <td>test1</td>
+        //         </tr>
+        //     );
+        // }
+        // rows.push(
+        //             <tr>
+        //                 <td>test</td>
+        //                 <td>test1</td>
+        //             </tr>
+        //         );
+
+        // for (let rowOffset = 0; rowOffset < bytes.length; rowOffset += this.state.bytesPerRow) {
+        //     rows.push(
+        //         <tr key={rowOffset}>
+        //             <td key={`addr${rowOffset}`}>{addressStr}</td>
+        //             {data.map((group, index) => <td key={`data${rowOffset},${index}`}>{group}</td>)}
+        //             <td key={`asc${rowOffset}`}>{asciiStr}</td>
+        //         </tr>
+        //     )
+        // }
 
         return (
             <React.Fragment>
@@ -201,7 +200,7 @@ export class GlobalVariables extends React.Component<Props, State> {
     }
 
     private renderMemory() {
-        if (!this.state.memory) {
+        if (!this.state.symbols) {
             return undefined;
         }
 
@@ -210,9 +209,10 @@ export class GlobalVariables extends React.Component<Props, State> {
                 <table>
                     <thead>
                         <tr>
-                            <th>Address</th>
-                            <th colSpan={this.state.bytesPerRow / this.state.bytesPerGroup}>Data</th>
-                            <th>ASCII</th>
+                            <th>Variable</th>
+                            <th>Type</th>
+                            <th>FilePath</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -224,6 +224,8 @@ export class GlobalVariables extends React.Component<Props, State> {
     }
 
     render() {
+        console.log("hai");
+        alert("hai1");
         return (
             <div id="memory-browser">
                 {this.renderInputSection()}

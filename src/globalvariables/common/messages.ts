@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  *********************************************************************/
-import { MemoryRequestArguments, MemoryContents } from 'cdt-gdb-adapter';
+import { MemoryRequestArguments } from 'cdt-gdb-adapter';
 
 export namespace Message {
     export interface Request {
@@ -28,7 +28,7 @@ export namespace ReadGlobals {
 
     export interface Response extends Message.Response {
         command: 'ReadGlobals';
-        result?: MemoryContents;
+        result?: any;
     }
 }
 
