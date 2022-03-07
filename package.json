@@ -308,14 +308,7 @@
                 "port": "1234",
                 "host": "localhost",
                 "server": "${command:askServerPath}",
-                "serverParameters": [
-                  "--machine",
-                  "spike",
-                  "--gdb",
-                  "tcp::1234",
-                  "-S",
-                  "--nographic"
-                ],
+                
                 "simulatorArgs":{
                   "machine":"spike"
                 }
