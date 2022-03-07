@@ -160,8 +160,8 @@ export class GlobalVariables extends React.Component<Props, State> {
                     <tr>
                         <td>{debugSymbols[i].symbols[j].name}</td>
                         <td>{debugSymbols[i].symbols[j].type}</td>
-                        <td>{debugSymbols[i].filename}</td>
                         <td>{debugSymbols[i].symbols[j].value}</td>
+                        <td>{debugSymbols[i].filename}</td>
                     </tr>
                 );
             }
@@ -204,15 +204,20 @@ export class GlobalVariables extends React.Component<Props, State> {
             return undefined;
         }
 
+        const css = "table, th, td { border: 1px solid white; }";
+
         return (
             <div>
+                <style>
+                    {css}
+                </style>
                 <table>
                     <thead>
                         <tr>
-                            <th>Variable</th>
+                            <th>Name</th>
                             <th>Type</th>
-                            <th>FilePath</th>
                             <th>Value</th>
+                            <th>Filepath</th>
                         </tr>
                     </thead>
                     <tbody>
