@@ -204,7 +204,7 @@ export class GlobalVariables extends React.Component<Props, State> {
             return undefined;
         }
 
-        const css = "table, th, td { border: 1px solid white; }";
+        const css = "table, th, td { border-spacing: 0px;border: 1px solid white; text-align: center;}";
 
         return (
             <div>
