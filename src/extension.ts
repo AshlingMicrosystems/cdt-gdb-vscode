@@ -10,15 +10,29 @@
 import { ExtensionContext, commands, window } from 'vscode';
 import { MemoryServer } from './memory/server/MemoryServer';
 export { MemoryServer } from './memory/server/MemoryServer';
+import { GlobalVariablesServer } from './globalvariables/server/GlobalVariablesServer';
+export { GlobalVariablesServer } from './globalvariables/server/GlobalVariablesServer';
 
 export function activate(context: ExtensionContext) {
     new MemoryServer(context);
+	
+	new GlobalVariablesServer(context);
 
     context.subscriptions.push(
-        commands.registerCommand('cdt.debug.askProgramPath', (_config) => {
-            return window.showInputBox({
-                placeHolder: 'Please enter the path to the program',
-            });
+       commands.registerCommand('cdt.debug.askProgramPath', config => {
+            return browseFile("Program to debug");
+        })
+    );
+
+    context.subscriptions.push(
+        commands.registerCommand('cdt.debug.askServerPath', config => {
+            return browseFile("GDB Server Executable");
+        })
+    );
+
+    context.subscriptions.push(
+        commands.registerCommand('cdt.debug.askGDBPath', config => {
+            return browseFile("GDB Executable");
         })
     );
 
@@ -33,4 +47,20 @@ export function activate(context: ExtensionContext) {
 
 export function deactivate() {
     // empty, nothing to do on deactivating extension
+}
+
+export async function browseFile(titleString:string)
+{
+    const APP_FILE = await window.showOpenDialog({
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        openLabel:titleString
+      });
+
+      if (!APP_FILE || APP_FILE.length < 1) {
+        return;
+      }
+
+      return APP_FILE[0].fsPath;
 }

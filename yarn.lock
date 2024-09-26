@@ -261,6 +261,19 @@
     "@typescript-eslint/types" "5.10.1"
     eslint-visitor-keys "^3.0.0"
 
+"@vscode/debugadapter@^1.48.0":
+  version "1.54.0"
+  resolved "https://registry.yarnpkg.com/@vscode/debugadapter/-/debugadapter-1.54.0.tgz#eec17fa051657f8b7de27498ba5f27a412033ddb"
+  integrity sha512-2/Fkhx9cvhVIvUW/ymoQP8QhsnkPpP24BZnzpkg8tt+pkZwGVAQfkNlbKFgxl/UFhChCGaG/ean9YlHI92CN+g==
+  dependencies:
+    "@vscode/debugprotocol" "1.54.0"
+    mkdirp "^1.0.4"
+
+"@vscode/debugprotocol@1.54.0", "@vscode/debugprotocol@^1.48.0":
+  version "1.54.0"
+  resolved "https://registry.yarnpkg.com/@vscode/debugprotocol/-/debugprotocol-1.54.0.tgz#d0e687e4963e8535b94a8d549486ce25438d1a7c"
+  integrity sha512-/Qt6ICgqj2OzIsTJ9JJ4JTsvNz1ql+tfdbvtTWZCLJbDgkHwPNUSr6iKwCjgcZ7Hz8SbzVK8e9vIV/L7R21FCQ==
+
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.1.tgz#2bfd767eae1a6996f432ff7e8d7fc75679c0b6a7"

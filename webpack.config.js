@@ -4,6 +4,7 @@ module.exports = {
     mode: 'development',
     entry: {
         MemoryBrowser: './src/memory/client/index.tsx',
+        GlobalVariables: './src/globalvariables/client/index.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'out'),
